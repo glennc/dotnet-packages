@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.NETCore.App": "1.0.0-rc2-3002363",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-rc2-*",
+    "Newtonsoft.Json": "8.0.3",
+    "Microsoft.DotNet.ProjectModel": "1.0.0-*",
+    "NuGet.Configuration": "3.5.0-beta-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+        "imports": ["portable-win8", "dnxcore50"]
+    }
+  },
+  "runtimes": {
+      "osx.10.11-x64": {},
+      "win7-x64": {}
+  }
+}
