@@ -193,7 +193,13 @@ namespace DotnetPackages
                             colorcode = $"\x1b[{selectedColorCodes[subDep.VersionRange.OriginalString]}m";
                             var isTopLevel = context.RootProject.Dependencies.Any(x=>x.Name == dep.Identity.Name);
                             //TODO: Need to factor out table layout and make sure it is better at handline smaller consoles. Lining up the columns with two magic hard coded numbers is already getting difficult.
-                            ansiConsole.WriteLine($"{(isTopLevel ? "     *    " : ""), -10} | {dep.Identity.Name,-60} | {colorcode}{subDep.VersionRange.OriginalString,-25}{_resetCode} ");
+                            //TODO: This is gross.
+                            var marker = isTopLevel ? "     *    " : "";
+                            if (dep.Identity.Name == context.ProjectFile.Name)
+                            {
+                                marker = "    \uD83D\uDC51     ";
+                            }
+                            ansiConsole.WriteLine($"{marker, -10} | {dep.Identity.Name,-60} | {colorcode}{subDep.VersionRange.OriginalString,-25}{_resetCode} ");
                         }
 
                     }
