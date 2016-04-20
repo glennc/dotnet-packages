@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.ProjectModel;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Configuration;
@@ -13,17 +14,17 @@ namespace DotnetPackages
     {
         private string _projectFile;
         private string _packageId;
-
         private string _framework;
-
         private List<string> _colorCodes = new List<string>{"39","31","32","33","34","35","36","37","90","91","92","93","94","95","96","97"};
-
         private static string _seperator = new String('-', 110);
         static string _resetCode = "\x1b[39m";
+
+        private string _lockFileLocation;
 
         public PackagesCommand(string projectFile, string packageId, string framework)
         {
             _projectFile = projectFile ?? Path.Combine(Directory.GetCurrentDirectory(), "project.json");
+            _lockFileLocation = Path.Combine(Path.GetDirectoryName(_projectFile), "project.lock.json");
             _packageId = packageId;
             _framework = framework;
         }
@@ -36,6 +37,11 @@ namespace DotnetPackages
                 return 1;
             }
 
+            if(!File.Exists(_lockFileLocation))
+            {
+                Console.WriteLine($"Unable to find a lockfile at {_lockFileLocation}. Run dotnet restore to download packages and generate a lockfile.");
+                return 1;
+            }
 
             ProjectContext projectContext;
             if(_framework == null)
@@ -76,13 +82,13 @@ namespace DotnetPackages
 
         private int RenderDependencyTable(ProjectContext projectContext)
         {
-            var console = AnsiConsole.GetOutput(false);
+            var console = AnsiConsole.GetOutput(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
             Console.WriteLine($"{"DependencyName",-55} | {"Type",-10} | {"Requested Version",-20} | {"Resolved Version",-20}");
             Console.WriteLine(_seperator);
 
             var resolvedDependencies = projectContext.LibraryManager.GetLibraries();
             var diagnostics = projectContext.LibraryManager.GetAllDiagnostics();
-
+            
             foreach (var dependency in projectContext.RootProject.Dependencies)
             {
                 var resolvedDependency = resolvedDependencies.First(x => x.Identity.Name.Equals(dependency.Name));
@@ -120,7 +126,7 @@ namespace DotnetPackages
 
         public void RenderDiagnostics(DiagnosticMessageSeverity severity, IList<DiagnosticMessage> diagnostics)
         {
-            var console = AnsiConsole.GetOutput(false);
+            var console = AnsiConsole.GetOutput(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
             Console.WriteLine(Enum.GetName(typeof(DiagnosticMessageSeverity), severity));
             Console.WriteLine(_seperator);
             if(diagnostics.Any(x=>x.Severity == severity))
@@ -140,8 +146,7 @@ namespace DotnetPackages
 
         public int RenderDependencyInfo(string pattern, ProjectContext context)
         {
-            //TODO: fix on windows. Need to be true on windows false on OS X and Linux apparently...
-            var ansiConsole = AnsiConsole.GetOutput(false);
+            var ansiConsole = AnsiConsole.GetOutput(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
             var resolvedDependencies = context.LibraryManager.GetLibraries();
             var resolvedDep = resolvedDependencies.FirstOrDefault(x => x.Identity.Name.IndexOf(_packageId, 0, StringComparison.OrdinalIgnoreCase) > 0);
 
@@ -152,6 +157,7 @@ namespace DotnetPackages
             }
 
             ansiConsole.WriteLine($"Dependency: {resolvedDep.Identity.Name}");
+            ansiConsole.WriteLine($"Type: {resolvedDep.Identity.Type.Value}");
             ansiConsole.WriteLine($"Selected Version: {resolvedDep.Identity.Version.ToFullString()}");
             ansiConsole.WriteLine($"Expected Location: {resolvedDep.Path}");
             ansiConsole.WriteLine($"Resolved: {CheckMark(resolvedDep.Resolved)}");
