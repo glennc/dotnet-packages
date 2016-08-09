@@ -95,3 +95,33 @@ System.Runtime.Extensions                               | 4.1.0                 
 System.Threading                                        | 4.0.11                    |  ✓
 -----------------------------------------------------------------------------------------------
 ```
+
+Output for dependency that is required by two packages in the graph:
+
+```
+MusicStore Dependency Information
+Framework: .NETCoreApp1.0
+--------------------------------------------------------------------------------------------------------------
+Dependency: Microsoft.Extensions.Logging
+Type: Package
+Selected Version: 1.1.0-alpha1-21772
+Expected Location: /Users/glennc/.nuget/packages/Microsoft.Extensions.Logging/1.1.0-alpha1-21772
+Resolved: ✓
+
+Depended on by:
+----------------------------------------------------------------------------------------------------
+Top Level  | Parent                                                       | Requested Version
+----------------------------------------------------------------------------------------------------
+           | Microsoft.AspNetCore.Hosting                                 | 1.1.0-alpha1-21772
+           | Microsoft.EntityFrameworkCore                                | 1.1.0-alpha1-21772
+-----------------------------------------------------------------------------------------------
+
+Depends on:
+-----------------------------------------------------------------------------------------------
+Dependency                                              | Version                   | Resolved
+-----------------------------------------------------------------------------------------------
+Microsoft.Extensions.DependencyInjection.Abstractions   | 1.1.0-alpha1-21772        |  ✓
+Microsoft.Extensions.Logging.Abstractions               | 1.1.0-alpha1-21772        |  ✓
+System.Threading                                        | 4.0.11                    |  ✓
+-----------------------------------------------------------------------------------------------
+```
