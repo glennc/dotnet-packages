@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.ProjectModel;
+using Microsoft.DotNet.ProjectModel.Graph;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -16,7 +17,7 @@ namespace DotnetPackages
         private string _packageId;
         private string _framework;
         private List<string> _colorCodes = new List<string>{"39","31","32","33","34","35","36","37","90","91","92","93","94","95","96","97"};
-        private static string _seperator = new String('-', 110);
+        private static string _seperator = new String('-', 120);
         static string _resetCode = "\x1b[39m";
 
         private string _lockFileLocation;
@@ -83,7 +84,7 @@ namespace DotnetPackages
         private int RenderDependencyTable(ProjectContext projectContext)
         {
             var console = AnsiConsole.GetOutput(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
-            Console.WriteLine($"{"DependencyName",-55} | {"Type",-10} | {"Requested Version",-20} | {"Resolved Version",-20}");
+            Console.WriteLine($"{"DependencyName",-55} | {"Type/Target",-20} | {"Requested Version",-20} | {"Resolved Version",-20}");
             Console.WriteLine(_seperator);
 
             var resolvedDependencies = projectContext.LibraryManager.GetLibraries();
@@ -100,7 +101,16 @@ namespace DotnetPackages
                     colorCode = GetColorForSeverity(diagnosticMessageForPackage.Severity);
                 }
 
-                Console.WriteLine($"{colorCode}{dependency.Name,-55} | {dependency.Type.Value,-10} | {dependency.VersionRange.OriginalString,-20} | {resolvedDependency.Identity.Version.ToFullString(),-20}{_resetCode}");
+                var typeString = dependency.Type.Value + (dependency.Target == null ? "" : "/" + dependency.Target);
+
+                if(dependency.Target == LibraryType.Project)
+                {
+                    Console.WriteLine($"{colorCode}{dependency.Name,-55} | {typeString,-20} | {"",-20} | {resolvedDependency.Identity.Version.ToFullString(),-20}{_resetCode}");                    
+                }
+                else
+                {
+                    Console.WriteLine($"{colorCode}{dependency.Name,-55} | {typeString,-20} | {dependency.VersionRange.OriginalString,-20} | {resolvedDependency.Identity.Version.ToFullString(),-20}{_resetCode}");
+                }
             }
 
             Console.WriteLine(" ");
